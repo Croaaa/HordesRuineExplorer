@@ -9,30 +9,27 @@
  * @charset UTF-8
  */
 // ==UserScript==
-// @name           Hordes - Ruine Explorer ++
-// @icon           http://data.twinoid.com/proxy/www.hordes.fr/img/icons/r_ruine.gif
+// @name           RuineExplorer++
 // @namespace      http://jplessis.free.fr/
+// @icon           http://data.twinoid.com/proxy/www.hordes.fr/img/icons/r_ruine.gif
 // @description    Permet de tracer les cartes dans les ruines de hordes.fr
 // @include        http://www.hordes.fr/*
 // @include        http://jcplessis.alwaysdata.net/hordes/ruine_explorer/ruine_simulator.html
-// @version        0.0.8
+// @include        http://bbh.fred26.fr/?pg=ruines*
+// @version        0.0.9
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
 // @updateURL      https://github.com/Croaaa/HordesRuineExplorer/raw/main/HordesRuineExplorerPlus.user.js
 // @downloadURL    https://github.com/Croaaa/HordesRuineExplorer/raw/main/HordesRuineExplorerPlus.user.js
+
 // ==/UserScript==
-
-
 console.log('Hello RuineExplorer');
 var CELL_SIZE=16;
 var CELL_NB=16;
-
 var current_position = [0, 0]
 var cells = []
-
 var est_fuite = false; //Si jamais on vient de fuir
-
 function init_cells(){
     for(var i =0; i < CELL_NB; i++){
         var line = []
@@ -42,21 +39,18 @@ function init_cells(){
         cells.push(line)
     }
     get_cell(0, 0).visited=true;
-	get_cell(0, 0).has_north=true;
+    get_cell(0, 0).has_north=true;
 }
-
 init_cells();
-
 var CANVAS_WIDTH=CELL_SIZE*CELL_NB;
-
-
 var root = document.createElement('div');
 root.setAttribute('id', 'ruine_explorer');
 root.setAttribute('style', 'position: absolute; bottom: 5;');
-root.innerHTML = '<style> button {	background-image : url("https://media.discordapp.net/attachments/461236623762522134/753661858291908698/button.png"); border : 1px solid black;	color: #d9d2ca;}</style>' +
+root.innerHTML = '<style> button {    background-image : url("https://media.discordapp.net/attachments/461236623762522134/753661858291908698/button.png"); border : 1px solid black;    color: #d9d2ca;}</style>' +
     '<div id="map" style="display:none; border:3px solid #8ca1b5; background:#494d60; padding : 5px; " >' +
-    '<button onclick="document.dispatchEvent(new CustomEvent(\'clear_map\'));">Effacer la carte</button>' +
-	'<button onclick="document.dispatchEvent(new CustomEvent(\'add_exit\', {\'detail\':\'north\'}));"><img src="https://media.discordapp.net/attachments/461236623762522134/753659705167184047/north.png" /></button>' +
+    '<button onclick="document.dispatchEvent(new CustomEvent(\'clear_map\'));">Reset</button>' +
+    '<button onclick="document.dispatchEvent(new CustomEvent(\'copy_map\'));">Copy BBH</button>' +
+    '<button onclick="document.dispatchEvent(new CustomEvent(\'add_exit\', {\'detail\':\'north\'}));"><img src="https://media.discordapp.net/attachments/461236623762522134/753659705167184047/north.png" /></button>' +
     '<button onclick="document.dispatchEvent(new CustomEvent(\'add_exit\', {\'detail\':\'south\'}));"><img src="https://media.discordapp.net/attachments/461236623762522134/753659846494257162/south.png" /></button>' +
     '<button onclick="document.dispatchEvent(new CustomEvent(\'add_exit\', {\'detail\':\'east\'}));"><img src="https://media.discordapp.net/attachments/461236623762522134/753659941004247160/east.png" /></button>' +
     '<button onclick="document.dispatchEvent(new CustomEvent(\'add_exit\', {\'detail\':\'west\'}));"><img src="https://media.discordapp.net/attachments/461236623762522134/753660021577089135/west.png" /></button><br/>' +
@@ -64,39 +58,17 @@ root.innerHTML = '<style> button {	background-image : url("https://media.discord
     '</div>' +
     '<br/><a style="display:inline-block; margin:1px; border:3px solid #8ca1b5; background:#494d60; padding : 5px; color: #d9d2ca; text-decoration:  none; " href="#" onclick="document.dispatchEvent(new CustomEvent(\'hide_show_map\')); return false;">RUINE EXPLORER</a>';
 document.body.appendChild(root);
-
-const heroJobs= ['item_tamed_pet.gif', 'item_tamed_pet_drug.gif', 'item_tamed_pet_off.gif', 'item_vest_on.gif', 'item_vest_off.gif', 'item_pelle.gif', 'item_keymol.gif', 'item_shield.gif', 'item_surv_book.gif'];
-// Chien, Chien drogué, Chien off, Capuche on, Capuche off, Fouineur, Technicien, Gardien, Ermite.
-
-const banItems= ['item_reveil.gif', 'item_reveil_off.gif', 'item_photo_off.gif', 'item_photo_1.gif', 'item_photo_2.gif', 'item_photo_3.gif', 'item_basic_suit_dirt.gif', 'item_basic_suit.gif', 'small_empty_inv.gif','small_more2.gif'];
-// Réveil Hurleur, Réveil Hurleur off, APAG off, APAG 1 charge, APAG 2 charges, APAG 3 charges, Habits sales, Habits normaux, Slot vide, +.
-
-function getBagItems() {
-    let has= [];
-    document.querySelectorAll('#myBag > li').forEach(a => {
-        let b= a.firstElementChild.src.split('/').reverse()[0];
-        if(banItems.indexOf(b)<0 && heroJobs.indexOf(b)<0) {
-            has.push(b);
-        }
-    });
-    return has;
-}
-
-
 function createCookie(name,value) {
     setTimeout(function() {
-		GM_setValue(name, JSON.stringify(value));
+        GM_setValue(name, JSON.stringify(value));
     }, 0);
 }
-
 function readCookie(name) {
-	return JSON.parse(GM_getValue(name));
+    return JSON.parse(GM_getValue(name));
 }
-
 function eraseCookie(name) {
-	GM_deleteValue(name);
+    GM_deleteValue(name);
 }
-
 var context = null;
 function get_canvas(){
     if (context == null){
@@ -108,24 +80,21 @@ function get_canvas(){
     }
     return context;
 }
-
 function draw_line(p1, p2, color) {
-	var ctx = get_canvas();
+    var ctx = get_canvas();
     get_canvas().strokeStyle = color;
     ctx.beginPath();
-	ctx.moveTo(p1[0],p1[1]);
-	ctx.lineTo(p2[0],p2[1]);
-	ctx.stroke();
+    ctx.moveTo(p1[0],p1[1]);
+    ctx.lineTo(p2[0],p2[1]);
+    ctx.stroke();
 }
-
 function draw_open(){
-	draw_line([2, 0], [2, 2]);
+    draw_line([2, 0], [2, 2]);
     draw_line([CELL_SIZE-2, 0], [CELL_SIZE-2, 2]);
 }
 function draw_wall(){
-	draw_line([2, 2], [CELL_SIZE-2, 2]);
+    draw_line([2, 2], [CELL_SIZE-2, 2]);
 }
-
 function draw_cell(has_opening, rotation){
     var canvas = get_canvas();
     canvas.save();
@@ -135,11 +104,10 @@ function draw_cell(has_opening, rotation){
     if(has_opening){
         draw_open();
     }else{
-     	draw_wall();
+        draw_wall();
     }
     canvas.restore();
 }
-
 function draw_img(src, x, y){
     var img=new Image();
     img.canvas_x = x;
@@ -152,23 +120,22 @@ function draw_img(src, x, y){
         canvas.restore();
         draw_current_location();
     });
-	img.src=src
+    img.src=src
 }
-
 function draw_square(x, y, cell){
     var canvas = get_canvas();
     canvas.save();
     canvas.beginPath();
-	canvas.translate(CANVAS_WIDTH/2 + x*CELL_SIZE, y*CELL_SIZE);
+    canvas.translate(CANVAS_WIDTH/2 + x*CELL_SIZE, y*CELL_SIZE);
     canvas.strokeStyle = "Black";
     if (cell.has_zombie){
         canvas.beginPath();
-	    canvas.fillStyle = "#E01B5D";
+        canvas.fillStyle = "#E01B5D";
         canvas.fillRect(2, 2, CELL_SIZE-4, CELL_SIZE-4);
     }
     else{
         canvas.beginPath();
-	    canvas.fillStyle = "#494d60";
+        canvas.fillStyle = "#494d60";
         canvas.fillRect(2, 2, CELL_SIZE-4, CELL_SIZE-4);
     }
     if (cell.has_room){
@@ -189,15 +156,12 @@ function draw_square(x, y, cell){
             draw_img('http://data.hordes.fr/gfx/icons/item_classicKey.gif', x, y);
         }
     }
-
     draw_cell(cell.has_north, 0)
     draw_cell(cell.has_south, Math.PI)
     draw_cell(cell.has_east, Math.PI / 2)
     draw_cell(cell.has_west, 3 * Math.PI / 2)
     canvas.restore();
-
 }
-
 function draw_current_location(){
     var x = current_position[0]
     var y = current_position[1]
@@ -209,7 +173,6 @@ function draw_current_location(){
     canvas.fillRect(0, 0, CELL_SIZE * 0.4, CELL_SIZE*0.4);
     canvas.restore();
 }
-
 function treat_events(){
     var canvas = get_canvas();
     canvas.clearRect(0, 0, 500, 500);
@@ -217,18 +180,15 @@ function treat_events(){
         for(var j = 0; j < CELL_NB; j++){
             var cell = get_cell(i, j);
             if (cell.visited){
-             	draw_square(i, j, cell);
+                draw_square(i, j, cell);
             }
         }
     }
     draw_current_location();
-
 }
-
 function init() {
     js.XmlHttp._ruine_onEnd = js.XmlHttp.onEnd;
     js.XmlHttp.onEnd = function() {
-
         function getPopupContent() {
             if (sel('#notificationText')==null) return null;
             else {
@@ -238,7 +198,6 @@ function init() {
             return text.trim();
             }
         }
-
         function sel(a,b) {
             let c= b||document, d= /^(?:#([\w-]+)|\.([\w-]+))$/.test(a), e= 0;
             if(d&&a[0]===".") {
@@ -249,8 +208,6 @@ function init() {
                 return c.querySelector(a);
             }
         }
-
-
         var url = this.urlForBack;
         this._ruine_onEnd();
         console.log('Ruine explorer url = ' + url);
@@ -297,48 +254,43 @@ function init() {
             if (!popup==null) event =["EMPREINTE"];
         }
         if (event != undefined) {
-        	var evt = new CustomEvent('ruine_event', {"detail":event});
-			document.dispatchEvent(evt);
+            var evt = new CustomEvent('ruine_event', {"detail":event});
+            document.dispatchEvent(evt);
         }
-
     };
 }
-
 function get_cell(x, y){
-	return cells[y][x+CELL_NB/2]
+    return cells[y][x+CELL_NB/2]
 }
-
 function get_current_cell(){
     var x = current_position[0];
     var y = current_position[1];
-	return get_cell(x, y);
+    return get_cell(x, y);
 }
-
 function handle_move(x, y, dx, dy){
     var current_cell = get_cell(x, y);
-	current_cell.visited = true;
+    current_cell.visited = true;
     console.log("Handle move");
     if (dx == 1){
-     	current_cell.has_east = true;
+        current_cell.has_east = true;
     }
     if (dx == -1){
-     	current_cell.has_west = true;
+        current_cell.has_west = true;
     }
     if (dy == -1){
-     	current_cell.has_north = true;
+        current_cell.has_north = true;
     }
     if (dy == 1){
-     	current_cell.has_south = true;
+        current_cell.has_south = true;
     }
     return current_cell;
 }
-
 function treat_event(event){
     event = event.detail
     var x = current_position[0];
     var y = current_position[1];
-	var current_cell = get_cell(x, y);
-	current_cell.visited = true;
+    var current_cell = get_cell(x, y);
+    current_cell.visited = true;
     console.log(event[0]);
     switch (event[0]){
         case "ROOM":
@@ -378,14 +330,12 @@ function treat_event(event){
     treat_events();
 }
 document.addEventListener("ruine_event", treat_event);
-
 function realign_map(){
     var map = document.getElementById("ruine_explorer");
     var doc = document.documentElement, body = document.body;
-	var top = (doc && doc.scrollTop || body && body.scrollTop || 0);
+    var top = (doc && doc.scrollTop || body && body.scrollTop || 0);
     map.style.bottom = (window.innerHeight - document.documentElement.clientHeight - top) + "px";
 }
-
 function clear_map(event){
     console.log("Clear map");
     eraseCookie("cells");
@@ -398,20 +348,88 @@ function clear_map(event){
     treat_events();
 }
 document.addEventListener("clear_map", clear_map);
-
+function getCellType(cell) {
+    n = (cell.has_north ? 1 : 0) + (cell.has_south ? 1 : 0) + (cell.has_east ? 1 : 0) + (cell.has_west ? 1 : 0);
+    switch(n) {
+        case 1:
+            if(cell.has_north)
+                return 41;
+            if(cell.has_south)
+                return 43;
+            if(cell.has_east)
+                return 44;
+            if(cell.has_west)
+                return 42;
+        case 2:
+            if(cell.has_north) {
+                if(cell.has_south)
+                    return 11;
+                if(cell.has_east)
+                    return 31;
+                if(cell.has_west)
+                    return 32;
+            }
+            if(cell.has_south) {
+                if(cell.has_east)
+                    return 33;
+                if(cell.has_west)
+                    return 34;
+            }
+            return 12;
+        case 3:
+            if(!cell.has_north)
+                return 24;
+            if(!cell.has_south)
+                return 22;
+            if(!cell.has_east)
+                return 23;
+            if(!cell.has_west)
+                return 21;
+        case 4:
+            return 13;
+    }
+}
+function copy_map(event){
+    try {
+        t = '';
+        for(let y in cells) {
+            if(y == 0) { // BBH entrance
+                continue
+            }
+            for(let x in cells[y]) {
+                if(cells[y][x].visited) {
+                    const bbhIndex = ((+y)+1)*29+(+x)+7;
+                    sel_case(bbhIndex);
+                    mod_case('m', getCellType(cells[y][x]));
+                    console.log(x, ";", y, " / ", bbhIndex, " => ", getCellType(cells[y][x])) ;
+                    if(cells[y][x].has_room) {
+                        mod_case('p', 1);
+                    } else if(cells[y][x].has_keyper) {
+                        mod_case('p', 4);
+                    } else if(cells[y][x].has_keymag) {
+                        mod_case('p', 3);
+                    } else if(cells[y][x].has_keydec) {
+                        mod_case('p', 5);
+                    }
+                }
+            }
+        }
+    } catch(e) {
+        alert("Allez sur une page d'édition de ruine sur bbh.fred26.fr !");
+    }
+}
+document.addEventListener("copy_map", copy_map);
 function hide_show_map(event){
     var map = document.getElementById("map");
     if (window.getComputedStyle(map).getPropertyValue("display") == "none"){
-		map.style.display = "inline-block";
+        map.style.display = "inline-block";
         createCookie("map_visible", true);
     } else {
         map.style.display = "none";
         createCookie("map_visible", false);
     }
-
 }
 document.addEventListener("hide_show_map", hide_show_map);
-
 function add_exit(event){
     var direction = event.detail;
     var cell = get_current_cell();
@@ -420,19 +438,19 @@ function add_exit(event){
     var y = 0;
     var new_direction = "";
     if (direction == "south"){
-    	new_direction = "north";
+        new_direction = "north";
         y = 1;
     }
     if (direction == "north"){
-    	new_direction = "south";
+        new_direction = "south";
         y = -1;
     }
     if (direction == "east"){
-    	new_direction = "west";
+        new_direction = "west";
         x = 1;
     }
     if (direction == "west"){
-    	new_direction = "east";
+        new_direction = "east";
         x = -1;
     }
     console.log("Rha ?" + x + " " + y + " " + new_direction);
@@ -441,7 +459,6 @@ function add_exit(event){
     treat_events();
 }
 document.addEventListener("add_exit", add_exit);
-
 realign_map();
 window.onscroll = realign_map;
 try{
@@ -453,12 +470,10 @@ try{
     init_cells();
     current_position = [0, 0];
 }
-
 var map_visible = readCookie("map_visible", true);
 if (map_visible) {
-	hide_show_map();
+    hide_show_map();
 }
-
 var script = document.createElement('script');
 script.setAttribute('id', 'hmu:script:init');
 script.setAttribute('type', 'application/javascript');
