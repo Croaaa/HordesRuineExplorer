@@ -19,6 +19,8 @@
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
+// @updateURL      https://github.com/Croaaa/HordesRuineExplorer/raw/main/HordesRuineExplorerPlus.user.js
+// @downloadURL    https://github.com/Croaaa/HordesRuineExplorer/raw/main/HordesRuineExplorerPlus.user.js
 // ==/UserScript==
 
 
