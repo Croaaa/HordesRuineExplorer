@@ -17,7 +17,7 @@
 // @include        http://jcplessis.alwaysdata.net/hordes/ruine_explorer/ruine_simulator.html
 // @include        http://bbh.fred26.fr/?pg=ruines*
 // @version        0.0.10
-// @author         JC Plessis (màj Eliam)
+// @author         JC Plessis (màj Eliam/Fregaton)
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
