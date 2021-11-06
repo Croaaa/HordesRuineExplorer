@@ -9,15 +9,14 @@
  * @charset UTF-8
  */
 // ==UserScript==
-// @name           RuineExplorer++
+// @name           Hordes - RuineExplorer++
 // @namespace      http://jplessis.free.fr/
 // @icon           http://data.twinoid.com/proxy/www.hordes.fr/img/icons/r_ruine.gif
 // @description    Permet de tracer les cartes dans les ruines de hordes.fr
 // @include        http://www.hordes.fr/*
+// @include        https://bbh.fred26.fr/*ruins
 // @include        http://jcplessis.alwaysdata.net/hordes/ruine_explorer/ruine_simulator.html
-// @include        http://bbh.fred26.fr/?pg=ruines*
-// @version        0.0.10
-// @author         JC Plessis (màj Eliam/Fregaton)
+// @version        0.0.11
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
