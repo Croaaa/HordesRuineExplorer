@@ -53,7 +53,8 @@ root.innerHTML = '<style> button {    background-image : url("https://media.disc
     '<button onclick="document.dispatchEvent(new CustomEvent(\'add_exit\', {\'detail\':\'north\'}));"><img src="https://media.discordapp.net/attachments/461236623762522134/753659705167184047/north.png" /></button>' +
     '<button onclick="document.dispatchEvent(new CustomEvent(\'add_exit\', {\'detail\':\'south\'}));"><img src="https://media.discordapp.net/attachments/461236623762522134/753659846494257162/south.png" /></button>' +
     '<button onclick="document.dispatchEvent(new CustomEvent(\'add_exit\', {\'detail\':\'east\'}));"><img src="https://media.discordapp.net/attachments/461236623762522134/753659941004247160/east.png" /></button>' +
-    '<button onclick="document.dispatchEvent(new CustomEvent(\'add_exit\', {\'detail\':\'west\'}));"><img src="https://media.discordapp.net/attachments/461236623762522134/753660021577089135/west.png" /></button><br/>' +
+    '<button onclick="document.dispatchEvent(new CustomEvent(\'add_exit\', {\'detail\':\'west\'}));"><img src="https://media.discordapp.net/attachments/461236623762522134/753660021577089135/west.png" /></button>' +
+    '<button onclick="document.dispatchEvent(new CustomEvent(\'add_object\', {\'detail\':\'object\'}));"><img src="http://data.hordes.fr/gfx/icons/item_bag.gif" /></button><br/>' +
     '<canvas id="ruine_canvas" width="' + CANVAS_WIDTH + 'px" height="' + CANVAS_WIDTH + 'px"></canvas>' +
     '</div>' +
     '<br/><a style="display:inline-block; margin:1px; border:3px solid #8ca1b5; background:#494d60; padding : 5px; color: #d9d2ca; text-decoration:  none; " href="#" onclick="document.dispatchEvent(new CustomEvent(\'hide_show_map\')); return false;">RUINE EXPLORER</a>';
@@ -137,6 +138,9 @@ function draw_square(x, y, cell){
         canvas.beginPath();
         canvas.fillStyle = "#494d60";
         canvas.fillRect(2, 2, CELL_SIZE-4, CELL_SIZE-4);
+    }
+    if (cell.has_object){
+        draw_img('http://data.hordes.fr/gfx/icons/item_bag.gif', x, y);
     }
     if (cell.has_room){
         draw_img('https://media.discordapp.net/attachments/461236623762522134/753661963694899336/small_enter.png', x, y);
@@ -295,6 +299,9 @@ function treat_event(event){
     switch (event[0]){
         case "ROOM":
             current_cell.has_room=true;
+            break;
+        case "OBJECT":
+            current_cell.has_object = !current_cell.has_object;
             break;
         case "FLEE":
             current_cell.has_zombie=true;
@@ -458,7 +465,22 @@ function add_exit(event){
     createCookie("cells", cells);
     treat_events();
 }
+
+function add_object(event){
+    var cell = get_current_cell();
+    if (cell.has_object){
+        cell.has_object=false;
+        console.log("object : true");
+    }else{
+        cell.has_object=true;
+        console.log("object : false");
+    }
+    treat_events();
+}
+
+
 document.addEventListener("add_exit", add_exit);
+document.addEventListener("add_object", add_object);
 realign_map();
 window.onscroll = realign_map;
 try{
