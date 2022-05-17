@@ -16,7 +16,7 @@
 // @include        http://www.hordes.fr/*
 // @include        https://bbh.fred26.fr/*ruins
 // @include        http://jcplessis.alwaysdata.net/hordes/ruine_explorer/ruine_simulator.html
-// @version        0.0.11
+// @version        0.0.12
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
