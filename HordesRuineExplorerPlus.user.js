@@ -14,6 +14,9 @@
 // @icon           http://data.twinoid.com/proxy/www.hordes.fr/img/icons/r_ruine.gif
 // @description    Permet de tracer les cartes dans les ruines de hordes.fr
 // @include        http://www.hordes.fr/*
+// @include        http://www.die2nite.com/*
+// @include        http://www.zombinoia.com/*
+// @include        http://www.dieverdammten.de/*
 // @include        https://bbh.fred26.fr/*ruins
 // @include        http://jcplessis.alwaysdata.net/hordes/ruine_explorer/ruine_simulator.html
 // @version        0.0.12
